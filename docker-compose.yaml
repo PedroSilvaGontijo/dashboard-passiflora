@@ -6,8 +6,8 @@ services:
     container_name: node-backend
     working_dir: /usr/src/app
     volumes:
-      - .\back:/usr/src/app
-      - .\back/watched-directory:/usr/src/app/watched-directory
+      - C:/back:/usr/src/app
+      - C:/back/watched-directory:/usr/src/app/watched-directory
     command: sh -c "npm i && npm start"
     ports:
       - "3000:3000"
@@ -16,8 +16,8 @@ services:
     image: nginx:alpine
     container_name: nginx-frontend
     volumes:
-      - .\front:/usr/share/nginx/html
-      - .\nginx/nginx.conf:/etc/nginx/nginx.conf
+      - C:/front:/usr/share/nginx/html
+      - C:/nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:
     - "8080:80"
     depends_on:
