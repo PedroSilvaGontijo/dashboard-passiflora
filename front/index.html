@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Passiflora</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4a4a8e;
+    }
+
+    #filters {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    #filters label {
+      display: inline-block;
+      margin-right: 10px;
+      color: #666;
+    }
+
+    #filters input,
+    #filters select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      margin-right: 20px;
+    }
+
+    #filters input:focus,
+    #filters select:focus {
+      border-color: #4a4a8e;
+    }
+
+    .button {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+    }
+    button {
+      background-color: #4a4a8e;
+      color: white;
+      margin-left: 1dvh;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #3a3a6f;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      background-color: #2e2e5a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    table th {
+      background-color: #4a4a8e;
+      color: white;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .titles {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .titles h3 {
+      font-size: 18px;
+      color: #333;
+    }
+
+    #installments {
+      width: 8dvh;
+    }
+    @media (max-width: 768px) {
+      #filters {
+        display: block;
+        white-space: normal;
+      }
+
+      #filters label,
+      #filters input,
+      #filters select {
+        margin-right: 0;
+        margin-bottom: 10px;
+        display: block;
+        width: 100%;
+      }
+
+      .titles {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .titles h3 {
+        font-size: 16px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      table th,
+      table td {
+        padding: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      .titles h3 {
+        font-size: 14px;
+      }
+
+      #filters input,
+      #filters select {
+        padding: 6px;
+      }
+
+      table th,
+      table td {
+        padding: 6px;
+      }
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>Dashboard de Vendas - Passiflora</h1>
+      <div class="button">
+        <button onclick="reload()">Atualizar Dados</button>
+        <button onclick="deleteAll()">Limpar Dados</button>
+        <button onclick="exportdata()">Exportar Dados</button>
+      </div>
+
+      <div class="titles">
+        <h3 id="totalNet">Total Líquido Aprovadas: R$ 0,00</h3>
+        <h3 id="totalApproved">Total Bruto Aprovadas: R$ 0,00</h3>
+        <h3 id="totalDeclined">Total Recusadas: R$ 0,00</h3>
+        <h3 id="totalCanceled">Total Canceladas: R$ 0,00</h3>
+      </div>
+      <div id="filters">
+        <label for="startDateFilter">Data de Início:</label>
+        <input type="date" id="startDateFilter" name="startDateFilter" />
+
+        <label for="endDateFilter">Data de Fim:</label>
+        <input type="date" id="endDateFilter" name="endDateFilter" />
+
+        <label for="operationType">Tipo de Operação:</label>
+        <select id="operationType">
+          <option value="">Selecione</option>
+          <option value="Débito">Débito</option>
+          <option value="Crédito">Crédito</option>
+          <option value="Pix">Pix</option>
+        </select>
+
+        <label for="saleStatus">Status:</label>
+        <select id="saleStatus">
+          <option value="">Selecione</option>
+          <option value="Aprovada">Aprovada</option>
+          <option value="Recusada">Recusada</option>
+          <option value="Cancelada">Cancelada</option>
+        </select>
+
+        <div>
+          <label for="installments">Parcelas:</label>
+          <input type="number" id="installments" min="1" />
+        </div>
+      </div>
+
+      <table id="salesTable">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Data</th>
+            <th>Valor</th>
+            <th>Valor Parcela</th>
+            <th>Número Parcelas</th>
+            <th>Operação</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        applyFilters();
+
+        const installmentsField =
+          document.getElementById("installments").parentNode;
+        installmentsField.style.display = "none";
+      });
+
+      document
+        .getElementById("startDateFilter")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("endDateFilter")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("operationType")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("saleStatus")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("installments")
+        .addEventListener("input", applyFilters);
+
+      async function applyFilters() {
+        const startDate = document.getElementById("startDateFilter").value;
+        const endDate = document.getElementById("endDateFilter").value;
+        const operationType = document.getElementById("operationType").value;
+        const saleStatus = document.getElementById("saleStatus").value;
+        const installments = document.getElementById("installments").value;
+
+        let url = `http://localhost:3000/sales/filter?startDate=${startDate}&endDate=${endDate}&operationType=${operationType}&saleStatus=${saleStatus}&installments=${installments}`;
+
+        if (
+          !startDate &&
+          !endDate &&
+          !operationType &&
+          !saleStatus &&
+          !installments
+        ) {
+          url = `http://localhost:3000/sales/all`;
+        }
+
+        try {
+          const response = await fetch(url);
+          const sales = await response.json();
+
+          updateSalesTable(sales);
+          calculateTotals(sales);
+        } catch (error) {
+          console.error("Erro ao filtrar vendas:", error);
+        }
+      }
+
+      function updateSalesTable(sales) {
+        const tbody = document.querySelector("#salesTable tbody");
+        tbody.innerHTML = "";
+
+        sales.forEach((sale) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+      <td>${new Date(sale.dateOfSale).toLocaleTimeString()}</td>
+      <td>${new Date(sale.dateOfSale).toLocaleDateString()}</td>
+      <td>R$ ${sale.saleAmount.toFixed(2)}</td>
+      <td>R$ ${sale.installmentValue.toFixed(2)}</td>
+      <td>${sale.installments}</td>
+      <td>${sale.operationType}</td>
+      <td>${sale.saleStatus}</td>
+    `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function calculateTotals(sales) {
+        const totalApproved = sales.filter(
+          (sale) => sale.saleStatus === "Aprovada"
+        );
+        const totalDeclined = sales.filter(
+          (sale) => sale.saleStatus === "Recusada"
+        );
+        const totalCanceled = sales.filter(
+          (sale) => sale.saleStatus === "Cancelada"
+        );
+
+        const totalNet = totalApproved.reduce(
+          (acc, sale) => acc + sale.saleAmount,
+          0
+        );
+        const totalGross = totalApproved.reduce(
+          (acc, sale) => acc + sale.saleAmount,
+          0
+        );
+
+        document.getElementById(
+          "totalNet"
+        ).innerText = `Total Líquido Aprovadas: R$ ${totalNet.toFixed(2)}`;
+        document.getElementById(
+          "totalApproved"
+        ).innerText = `Total Bruto Aprovadas: R$ ${totalGross.toFixed(2)}`;
+        document.getElementById(
+          "totalDeclined"
+        ).innerText = `Total Recusadas: R$ ${totalDeclined
+          .reduce((acc, sale) => acc + sale.saleAmount, 0)
+          .toFixed(2)}`;
+        document.getElementById(
+          "totalCanceled"
+        ).innerText = `Total Canceladas: R$ ${totalCanceled
+          .reduce((acc, sale) => acc + sale.saleAmount, 0)
+          .toFixed(2)}`;
+      }
+
+      document
+        .getElementById("operationType")
+        .addEventListener("change", function () {
+          const operationType = document.getElementById("operationType").value;
+          const installmentsField =
+            document.getElementById("installments").parentNode;
+
+          if (operationType === "Crédito") {
+            installmentsField.style.display = "block";
+          } else {
+            installmentsField.style.display = "none";
+          }
+        });
+
+      async function deleteAll() {
+        try {
+          await fetch("http://localhost:3000/sales/delete-all", {
+            method: "DELETE",
+          });
+          alert("Todos os dados foram limpos com sucesso!");
+          applyFilters();
+        } catch (error) {
+          console.error("Erro ao limpar dados:", error);
+        }
+      }
+      async function exportdata() {
+        const startDate = document.getElementById("startDateFilter").value;
+        const endDate = document.getElementById("endDateFilter").value;
+        const operationType = document.getElementById("operationType").value;
+        const saleStatus = document.getElementById("saleStatus").value;
+        const installments = document.getElementById("installments").value;
+
+        const url = `http://localhost:3000/sales/export?startDate=${startDate}&endDate=${endDate}&operationType=${operationType}&saleStatus=${saleStatus}&installments=${installments}`;
+
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "sales_report.pdf";
+          link.click();
+        } catch (error) {
+          console.error("Erro ao exportar dados:", error);
+        }
+      }
+
+      function reload() {
+        location.reload();
+      }
+    </script>
+  </body>
+</html>

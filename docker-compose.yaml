@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    image: node:20-alpine
+    container_name: node-backend
+    working_dir: /usr/src/app
+    volumes:
+      - ./back:/usr/src/app
+      - ./back/watched-directory:/usr/src/app/watched-directory
+    command: sh -c "npm i && npm start"
+    ports:
+      - "3000:3000"
+    restart: always
+  frontend:
+    image: nginx:alpine
+    container_name: nginx-frontend
+    volumes:
+      - ./front:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+    - "8080:80"
+    depends_on:
+      - backend
+    restart: always
